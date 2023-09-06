@@ -2,10 +2,12 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
-from itertools import combinations
+import os
+
+path = os.getcwd()+r"\Datasets\default.csv"
 
 # Load the dataset
-df = pd.read_csv("default.csv")
+df = pd.read_csv(path)
 
 # Preprocessing steps
 df.replace("-", "0.0", inplace=True)
