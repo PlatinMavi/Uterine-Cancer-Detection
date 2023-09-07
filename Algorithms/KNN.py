@@ -4,6 +4,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 import os
 import warnings
+import pickle
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
@@ -123,6 +124,10 @@ for rs in range(100):
         BestScore = score
         BestScoreSeed = rs
         print(BestScore)
+        
+        with open('knn_model.pkl', 'wb') as model_file:
+            pickle.dump(knn_classifier, model_file)
+        print(f"New best score ({BestScore}) achieved and the model is saved.")
 
 print(BestScore,BestScoreSeed)
 
