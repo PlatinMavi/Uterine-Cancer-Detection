@@ -23,19 +23,10 @@ status = {"basitler": 0, "ein": 0, "highrisk": 1, "lowrisk": 1}
 yUnmapped = df['status']
 y = yUnmapped.map(status)
 
-X = df.drop(columns=['status'])
+X = df.drop(columns=['status',"NRBC"])
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=12)
 
 X_hand, X_machine, y_hand, y_machine = X_test[:len(X_test)//2], X_test[len(X_test)//2:], y_test[:len(y_test)//2], y_test[len(y_test)//2:]
-
-knn_classifier = KNeighborsClassifier(n_neighbors=20)
-
-def TrainKnn(selected_features):
-    selected_columns = list(selected_features)
-    knn_classifier.fit(X_train[selected_columns], y_train)
-    y_pred = knn_classifier.predict(X_machine[selected_columns])
-    accuracy = accuracy_score(y_machine, y_pred)
-    return accuracy
 
 TestParameters = [
     {
@@ -51,6 +42,25 @@ TestParameters = [
         "name":"Comb-3"
     },
 ]
+
+all_columns = X.columns.tolist()
+columns = all_columns[:]
+
+for col in columns:
+    if "_" in col:
+        columns.pop(columns.index(col))
+
+for cosCol in columns:
+    TestParameters.append({"params":[cosCol], "name":cosCol})
+
+knn_classifier = KNeighborsClassifier(n_neighbors=20)
+
+def TrainKnn(selected_features):
+    selected_columns = list(selected_features)
+    knn_classifier.fit(X_train[selected_columns], y_train)
+    y_pred = knn_classifier.predict(X_machine[selected_columns])
+    accuracy = accuracy_score(y_machine, y_pred)
+    return accuracy
 
 def TestKnn(selected_features, x_var, y_var):
     selected_columns = list(selected_features)
@@ -87,14 +97,15 @@ for i,useless in enumerate(X_hand):
     voted = 0
 
     for resTest in resultsOfTests:
-        if resTest["pred"] == 1:
-            voteValue0 = voteValue0 + resTest["accModel"]
-        else:
-            voteValue1 = voteValue1 + resTest["accModel"]
+        # if resTest["accModel"] < 0.67:
+            if resTest["pred"] == 1:
+                voteValue1 = voteValue1 + resTest["accModel"]**5
+            else:
+                voteValue0 = voteValue0 + resTest["accModel"]**5
     
     if voteValue1 > voteValue0:
         voted = 1
-    else:
+    else: 
         voted = 0
 
     if voted == y_var:
@@ -102,7 +113,7 @@ for i,useless in enumerate(X_hand):
     else:
         gotWrong += 1
 
-print(gotRight/(gotRight+gotWrong))
+print(gotRight/(gotRight+gotWrong),"COMBINATIONAL ACCURACY OF ALL MODELS VOTES")
     
 
 warnings.resetwarnings()
