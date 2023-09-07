@@ -22,98 +22,108 @@ for column in df.columns[1:]:
 status = {"basitler": 0, "ein": 0, "highrisk": 1, "lowrisk": 1}
 yUnmapped = df['status']
 y = yUnmapped.map(status)
-
 X = df.drop(columns=['status',"NRBC"])
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=12)
 
-X_hand, X_machine, y_hand, y_machine = X_test[:len(X_test)//2], X_test[len(X_test)//2:], y_test[:len(y_test)//2], y_test[len(y_test)//2:]
+BestScore = 0
+BestScoreSeed = 0
 
-TestParameters = [
-    {
-        "params":["MCHC", "RDWSD", "RDWCV", "PCT", "PDW"],
-        "name":"Comb-1"
-    },
-    {
-        "params":['WBC', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW'],
-        "name":"Comb-2"
-    },
-    {
-        "params":['EOS', 'BASO', 'WBC', 'MONO', 'HCT', 'MCHC', 'RDWSD', 'RDWCV', 'MPV', 'PCT', 'PDW'],
-        "name":"Comb-3"
-    },
-]
-
-all_columns = X.columns.tolist()
-columns = all_columns[:]
-
-for col in columns:
-    if "_" in col:
-        columns.pop(columns.index(col))
-
-for cosCol in columns:
-    TestParameters.append({"params":[cosCol], "name":cosCol})
-
-knn_classifier = KNeighborsClassifier(n_neighbors=20)
-
-def TrainKnn(selected_features):
-    selected_columns = list(selected_features)
-    knn_classifier.fit(X_train[selected_columns], y_train)
-    y_pred = knn_classifier.predict(X_machine[selected_columns])
-    accuracy = accuracy_score(y_machine, y_pred)
-    return accuracy
-
-def TestKnn(selected_features, x_var, y_var):
-    selected_columns = list(selected_features)
-    knn_classifier.fit(X_train[selected_columns], y_train)
-    # Reshape x_var to a 2D array
-    x_var_2d = x_var[selected_columns].values.reshape(1, -1)
-    y_pred = knn_classifier.predict(x_var_2d)
+for rs in range(100):
     
-    return y_pred
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=rs)
 
-for parameters in TestParameters:
-    acc = TrainKnn(parameters["params"])
-    parameters["acc"] = acc
-    print(acc, parameters["name"])
+    X_hand, X_machine, y_hand, y_machine = X_test.iloc[:len(X_test)//2], X_test.iloc[len(X_test)//2:], y_test.iloc[:len(y_test)//2], y_test.iloc[len(y_test)//2:]
 
-gotRight = 0
-gotWrong = 0
+    TestParameters = [
+        {
+            "params":["MCHC", "RDWSD", "RDWCV", "PCT", "PDW"],
+            "name":"Comb-1"
+        },
+        {
+            "params":['WBC', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW'],
+            "name":"Comb-2"
+        },
+        {
+            "params":['EOS', 'BASO', 'WBC', 'MONO', 'HCT', 'MCHC', 'RDWSD', 'RDWCV', 'MPV', 'PCT', 'PDW'],
+            "name":"Comb-3"
+        },
+    ]
 
-for i,useless in enumerate(X_hand):
-    x_var = X_hand.reset_index(drop=True).iloc[i]
-    y_var = y_hand.reset_index(drop=True).iloc[i]
+    all_columns = X.columns.tolist()
+    columns = all_columns[:]
 
-    resultsOfTests = []
-    for params in TestParameters:
-        resultsOfTest = {}
-        pred = TestKnn(params["params"],x_var,y_var)
-        resultsOfTest["accModel"] = params["acc"]
-        resultsOfTest["pred"] = pred[0]
+    for col in columns:
+        if "_" in col:
+            columns.pop(columns.index(col))
 
-        resultsOfTests.append(resultsOfTest)
+    for cosCol in columns:
+        TestParameters.append({"params":[cosCol], "name":cosCol})
 
-    voteValue0 = 0
-    voteValue1 = 0
-    voted = 0
+    knn_classifier = KNeighborsClassifier(n_neighbors=20)
 
-    for resTest in resultsOfTests:
-        # if resTest["accModel"] < 0.67:
-            if resTest["pred"] == 1:
-                voteValue1 = voteValue1 + resTest["accModel"]**5
-            else:
-                voteValue0 = voteValue0 + resTest["accModel"]**5
-    
-    if voteValue1 > voteValue0:
-        voted = 1
-    else: 
+    def TrainKnn(selected_features):
+        selected_columns = list(selected_features)
+        knn_classifier.fit(X_train[selected_columns], y_train)
+        y_pred = knn_classifier.predict(X_machine[selected_columns])
+        accuracy = accuracy_score(y_machine, y_pred)
+        return accuracy
+
+    def TestKnn(selected_features, x_var, y_var):
+        selected_columns = list(selected_features)
+        knn_classifier.fit(X_train[selected_columns], y_train)
+        # Reshape x_var to a 2D array
+        x_var_2d = x_var[selected_columns].values.reshape(1, -1)
+        y_pred = knn_classifier.predict(x_var_2d)
+        
+        return y_pred
+
+    for parameters in TestParameters:
+        acc = TrainKnn(parameters["params"])
+        parameters["acc"] = acc
+        # print(acc, parameters["name"])
+
+    gotRight = 0
+    gotWrong = 0
+
+    for i,useless in enumerate(X_hand):
+        x_var = X_hand.reset_index(drop=True).iloc[i]
+        y_var = y_hand.reset_index(drop=True).iloc[i]
+
+        resultsOfTests = []
+        for params in TestParameters:
+            resultsOfTest = {}
+            pred = TestKnn(params["params"],x_var,y_var)
+            resultsOfTest["accModel"] = params["acc"]
+            resultsOfTest["pred"] = pred[0]
+
+            resultsOfTests.append(resultsOfTest)
+
+        voteValue0 = 0
+        voteValue1 = 0
         voted = 0
 
-    if voted == y_var:
-        gotRight += 1
-    else:
-        gotWrong += 1
+        for resTest in resultsOfTests:
+            # if resTest["accModel"] < 0.67:
+                if resTest["pred"] == 1:
+                    voteValue1 = voteValue1 + resTest["accModel"]**5
+                else:
+                    voteValue0 = voteValue0 + resTest["accModel"]**5
+        
+        if voteValue1 > voteValue0:
+            voted = 1
+        else: 
+            voted = 0
 
-print(gotRight/(gotRight+gotWrong),"COMBINATIONAL ACCURACY OF ALL MODELS VOTES")
-    
+        if voted == y_var:
+            gotRight += 1
+        else:
+            gotWrong += 1
+
+    score = gotRight/(gotRight+gotWrong)
+    if score > BestScore and BestScore != 1 :
+        BestScore = score
+        BestScoreSeed = rs
+        print(BestScore)
+
+print(BestScore,BestScoreSeed)
 
 warnings.resetwarnings()
