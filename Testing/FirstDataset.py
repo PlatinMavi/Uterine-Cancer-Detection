@@ -20,7 +20,7 @@ for column in df.columns[1:]:
     df[column] = df[column].apply(ConvertFloat)
 
 # Define the target column mapping
-status = {"basitler": 0, "ein": 1, "highrisk": 1, "lowrisk": 1}
+status = {"basitler": 0, "ein": 0, "highrisk": 1, "lowrisk": 1}
 yUnmapped = df['status']
 y = yUnmapped.map(status)
 
@@ -51,7 +51,7 @@ for col in columns:
 test1 = ["MCHC", "RDWSD", "RDWCV", "PCT", "PDW"]
 test2 = ['WBC', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW']
 test3 = ['EOS', 'BASO', 'WBC', 'MONO', 'HCT', 'MCHC', 'RDWSD', 'RDWCV', 'MPV', 'PCT', 'PDW']
-results = [columns,all_columns,test1,test2, test3]
+results = [test1,test2, test3]
 
 
 print("\n COMBINATUAL SCORE \n")
@@ -70,7 +70,7 @@ for i,rep in enumerate(columns):
     if score >= 67:
         best.append(rep)
 
-print(best)
+# print(best)
 
 # ['WBC', 'NEU', 'NEU_P', 'LYM', 'LYM_P', 'MONO', 'MONO_P', 'EOS', 'EOS_P', 'BASO', 'BASO_P', 'RBC', 'HGB', 'HCT', 'MCV', 'MCH', 'MCHC', 'RDWSD', 'RDWCV', 'PLT', 'MPV', 'PCT', 'PDW', 'NRBC', 'NRBC_P']
 # ['WBC', 'NEU', 'LYM', 'MONO', 'EOS', 'BASO', 'RBC', 'HGB', 'HCT', 'MCV', 'MCH', 'MCHC', 'RDWSD', 'RDWCV', 'PLT', 'MPV', 'PCT', 'PDW', 'NRBC']
