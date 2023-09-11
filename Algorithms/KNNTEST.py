@@ -5,8 +5,10 @@ from sklearn.metrics import accuracy_score
 import os
 import warnings
 
+#STOP ANNOYING WARNINGS
 warnings.filterwarnings('ignore', category=UserWarning)
 
+# FIXING DATASET
 path = os.getcwd()+r"\Datasets\default.csv"
 df = pd.read_csv(path)
 df.replace("-", "0.0", inplace=True)
@@ -18,19 +20,18 @@ def ConvertFloat(value):
 for column in df.columns[1:]:
     df[column] = df[column].apply(ConvertFloat)
 
-# Define the target column mapping
+# TARGETING COLUMNS AND MAPPING FOR EASIER PREDICTIONS
 status = {"basitler": 0, "ein": 0, "highrisk": 1, "lowrisk": 1}
 yUnmapped = df['status']
 y = yUnmapped.map(status)
-X = df.drop(columns=['status',"NRBC"])
+X = df.drop(columns=['status',"NRBC"]) # LACK OF DATA FOR NRBC
 
-BestScore = 0
-BestScoreSeed = 0
-    
+# SPLITING FOR DIFFERENT TEST VARIABLES 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=86)
-
 X_hand, X_machine, y_hand, y_machine = X_test.iloc[:len(X_test)//2], X_test.iloc[len(X_test)//2:], y_test.iloc[:len(y_test)//2], y_test.iloc[len(y_test)//2:]
 
+
+# COLUMNS AND COMBINATIONS THAT HAS HIGH ACCURACY RATE
 TestParameters = [
     {
         "params":["MCHC", "RDWSD", "RDWCV", "PCT", "PDW"],
@@ -46,6 +47,7 @@ TestParameters = [
     },
 ]
 
+# TESTING INDIVIDUAL VALUES AND ADDING THEM AS TEST PARAMETERS
 all_columns = X.columns.tolist()
 columns = all_columns[:]
 
@@ -56,8 +58,10 @@ for col in columns:
 for cosCol in columns:
     TestParameters.append({"params":[cosCol], "name":cosCol})
 
+# KNN ALORITHIM DEFINITION
 knn_classifier = KNeighborsClassifier(n_neighbors=20)
 
+# TO GET ACCURACY SCORE FOR INDIVIDUAL TESTING
 def TrainKnn(selected_features):
     selected_columns = list(selected_features)
     knn_classifier.fit(X_train[selected_columns], y_train)
@@ -65,6 +69,7 @@ def TrainKnn(selected_features):
     accuracy = accuracy_score(y_machine, y_pred)
     return accuracy
 
+# TO GET PREDICTIONS FOR INDIVIDUALS
 def TestKnn(selected_features, x_var, y_var):
     selected_columns = list(selected_features)
     knn_classifier.fit(X_train[selected_columns], y_train)
@@ -74,14 +79,16 @@ def TestKnn(selected_features, x_var, y_var):
     
     return y_pred
 
+# SAVING ACCURACY RATE FOR LATER USEAGES
 for parameters in TestParameters:
     acc = TrainKnn(parameters["params"])
     parameters["acc"] = acc
-    # print(acc, parameters["name"])
+
 
 gotRight = 0
 gotWrong = 0
 
+# TESTING INDIVIDUAL DATA IN EVERY COMB AND CREATED VOTING SYSTEM
 for i,useless in enumerate(X_hand):
     x_var = X_hand.reset_index(drop=True).iloc[i]
     y_var = y_hand.reset_index(drop=True).iloc[i]
@@ -116,7 +123,7 @@ for i,useless in enumerate(X_hand):
     else:
         gotWrong += 1
 
-score = gotRight/(gotRight+gotWrong)
+score = gotRight/(gotRight+gotWrong) # CALCULATE OVERALL ACCURACY
 print(score)
 
 
