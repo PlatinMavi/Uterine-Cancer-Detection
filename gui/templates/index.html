@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rahim Kanseri</title>
+    <link rel="stylesheet" href="./static/index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed&display=swap" rel="stylesheet">
+
+    <style>
+        .fg{
+            font-family: 'Barlow Condensed', sans-serif;
+        }
+        .GFG {
+            color: white;
+            text-shadow: -2px 2px 0 #000,
+                          2px 2px 0 #000,
+                         2px -2px 0 #000,
+                        -2px -2px 0 #000;
+        }
+    </style>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white overflow-x-hidden bg-[#F4F5FA]">
+    <div class="header">
+        <div class="inner-header flex">
+            <div>
+                <h1 class="text-6xl  fg GFG" >Tübitak Kan Sonucundan <br>Rahim Kanseri Tespiti</h1>
+                <a href="#test" class="relative inline-block group mt-8 fg font-bold text-3xl">
+                    <span class="relative z-10 block px-5 py-3 overflow-hidden font-medium leading-tight text-gray-800 transition-colors duration-300 ease-out border-2 border-gray-900 rounded-lg group-hover:text-white">
+                    <span class="absolute inset-0 w-full h-full px-5 py-3 rounded-lg bg-gray-50"></span>
+                    <span class="absolute left-0 w-48 h-48 -ml-2 transition-all duration-300 origin-top-right -rotate-90 -translate-x-full translate-y-12 bg-gray-900 group-hover:-rotate-180 ease"></span>
+                    <span class="relative">Test Et</span>
+                    </span>
+                    <span class="absolute bottom-0 right-0 w-full h-12 -mb-1 -mr-1 transition-all duration-200 ease-linear bg-gray-900 rounded-lg group-hover:mb-0 group-hover:mr-0" data-rounded="rounded-lg"></span>
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+            viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                </g>
+            </svg>
+        </div>
+        
+    </div>
+
+    <div class="contanier mx-auto">
+
+            <div class=" p-10 rounded-xl">
+                <!-- headers content-->
+                <div class="flex flex-col justify-center items-center text-center">
+                    <div class="max-w-sm font-bold font-sans">
+                        Bu Projenin Amacı Nedir Ve Ne Başarmıştır ? 
+                    </div>
+                    <div class="font-light max-w-lg mt-5 text-sm">
+                        Kanser Hastalarının Kanlarındaki değerlerin, beyaz kan hücreleri vb. , değişeceğini düşünerekten bu projeye giriştik.
+                    </div>
+                </div>
+    
+                <!-- subscriptions -->
+                <div class="flex flex-col md:flex-row space-x-0 md:space-x-8 space-y-12  md:space-y-0 justify-center items-center mt-10">
+                    <div class="bg-[#FFFBEC] rounded-xl">
+                        <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                            <h3 class="mt-3 font-semibold text-lg">Neden Rahim Kanseri ?</h3>
+                            <p class="text-sm font-light w-64">Çoğu kadının ve kız çocuklarının canını alan bu kanser türünü, erken tehşisinin ne kadar önemli olduğunu bildiğimiz için hayata geçirme kararı aldık. Tahmin algoritmamızın hatalı tahminini önlemek için sadece rahim kanseri hastalarını baz aldık.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#ECEEFF] rounded-xl">
+                        <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                            <h3 class="mt-3 font-semibold text-lg">Bu Yapay Zekanın <br>Doktorlardan Ne Farkı Var ?</h3>
+                            <p class="text-sm font-light w-64">Şu ana kadar kullanılan Nötrofil/Lenfosit yönteminin aksine yazdığımız model üzerinde bu 2 değer haricinde alakasız olduğunu düşündüğümüz değerlerin etkili bir değişken olduğunu fark ettik. Bu değişkenleri ve kombinasyonları ile makine eğitilip tespit yaptırıyoruz.</p>
+                        </div>
+                    </div>
+    
+                    <div class="bg-[#F9ECFF] rounded-xl">
+                        <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                            <h3 class="mt-3 font-semibold text-lg">Nasıl Tahmin Ediyorsunuz ?</h3>
+                            <p class="text-sm font-light w-64">Kocaeli Üniversitesinden sağladığımız veriler sayesinde kendi yazdığımız bir yapay zeka modelini eğittik. Bu eğittiğimiz model üzerinde geliştirmeler yaparaktan %91,6 seviyesinde isabet ile kanser olup olmadığınızı tespit edebiliyoruz.</p>
+                        </div>
+                    </div>
+    
+                </div>
+    
+                <div class="container mx-auto">
+                    <div class="bg-black w-max mx-auto mt-12 rounded-xl">
+                        <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                            <h3 class="mt-3 font-semibold text-xl mb-4 text-lg">Örnek Bir Kan Sonucu :</h3>
+                            <img src="./static/exapmle.png" alt="">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col mt-12 justify-center items-center text-center">
+                        <div class="max-w-sm font-bold font-sans">
+                            Peki, biz bu değerlerden hangilerini kullanıyoruz ?
+                        </div>
+                        <div class="font-light max-w-lg mt-5 text-sm">
+                            Neredeyse Hepsini. Farklı farklı yazdığımız algoritmaların ve kombinasyonların her biri farklı değerleri göz önüne alıyor. İsabet oranlarına göre bu algoritmalar , bir oylama yapıp bize ortak fikirlerini tahmin olarak geri veriyorlar ve böylece ana algoritma önem sırasına göre karar veriyor.
+                        </div>
+                    </div>
+
+                    <div class="bg-black w-max mx-auto mt-12 rounded-xl">
+                        <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                            <h3 class="mt-3 font-semibold text-xl mb-8 text-lg">Basitleştirilmiş bir şekilde çalışma prensibi :</h3>
+                            <img src="./static/alg.png" alt="">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col mt-12 justify-center items-center text-center">
+                        <div class="max-w-sm font-bold font-sans">
+                            Kullandığımız Yazılım dili, Modeller, Yöntemler neler ?
+                        </div>
+                        <div class="font-light max-w-lg mt-5 text-sm">
+                            Kodumuz Python ile yazılmıştır, en iyi sonucu bize veren KNN (K-Nearest Neighbors) algoritması ve özelleştirilmiş oylama yönteminin yanında, Random Forest Classifier, Ensemle learning, Grid Search vb. teknikler Kullanılmıştır.
+                        </div>
+                        <a href="https://github.com/PlatinMavi/Cervicular-Cancer-Detection" class="relative inline-block group mt-8 fg font-bold text-xl">
+                            <span class="relative z-10 block px-5 py-3 overflow-hidden font-medium leading-tight text-gray-800 transition-colors duration-300 ease-out border-2 border-gray-900 rounded-lg group-hover:text-white">
+                            <span class="absolute inset-0 w-full h-full px-5 py-3 rounded-lg bg-gray-50"></span>
+                            <span class="absolute left-0 w-48 h-48 -ml-2 transition-all duration-300 origin-top-right -rotate-90 -translate-x-full translate-y-12 bg-gray-900 group-hover:-rotate-180 ease"></span>
+                            <span class="relative">Meraklısı İçin Kod</span>
+                            </span>
+                            <span class="absolute bottom-0 right-0 w-full h-12 -mb-1 -mr-1 transition-all duration-200 ease-linear bg-gray-900 rounded-lg group-hover:mb-0 group-hover:mr-0" data-rounded="rounded-lg"></span>
+                        </a>
+                    </div>
+
+                    <div class="bg-black w-max mx-auto mt-12 rounded-xl" id="test">
+                        <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                            <h3 class="mt-3 font-semibold text-xl mb-8 text-lg">Kan Değerleriniz ile Test Edin:</h3>
+                            <p class="my-12" >IN PROGRESS</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col mt-24 justify-center items-center text-center">
+                        <div class="max-w-sm font-bold font-sans">
+                            Peki Biz kimiz ? 
+                        </div>
+                        <div class="font-light max-w-lg mt-5 text-sm">
+                            Kocaeli/İzmit Muammer Dereli Fen Lisesi 11. sınıf Öğrencileri:
+                        </div>
+                    </div>
+        
+                    <!-- subscriptions -->
+                    <div class="flex flex-col md:flex-row space-x-0 md:space-x-8 space-y-12  md:space-y-0 justify-center items-center mt-10">
+                        <div class="bg-[#FFFBEC] rounded-xl">
+                            <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                                <h3 class="mb-3 font-semibold text-lg">Ali Asaf Usta</h3>
+                                <img src="./static/bread.png" alt="" class="w-64 h-64 object-cover rounded-2xl">
+                            </div>
+                        </div>
+    
+                        <div class="bg-[#ECEEFF] rounded-xl">
+                            <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                                <h3 class="mb-3 font-semibold text-lg">Alper Gezer</h3>
+                                <img src="./static/bread.png" alt="" class="w-64 h-64 object-cover rounded-2xl">
+                            </div>
+                        </div>
+        
+                        <div class="bg-[#F9ECFF] rounded-xl">
+                            <div class="flex flex-col p-8 rounded-xl bg-white shadow-xl translate-x-4 translate-y-4 w-96 md:w-auto">
+                                <h3 class="mb-3 font-semibold text-lg">Sinan Can Altay</h3>
+                                <img src="./static/bread.png" alt="" class="w-64 h-64 object-cover rounded-2xl">
+                            </div>
+                        </div>
+        
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+</body>
+</html>
