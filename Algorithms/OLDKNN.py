@@ -7,11 +7,11 @@ import warnings
 import pickle
 
 config = {
-    "n_neighbor":20,
-    "accMultiplier":10,
-    "accResultMultiplier":2,
-    "test_size":0.1,
-    "modelAffectionLimitator":0
+    "n_neighbor":21,    # Knn neighbour count, best = [19,20]
+    "accMultiplier":10,     # ex: *10 the multipler of accuracy score
+    "accResultMultiplier":3,    # ex: **2 the multipler of voting system
+    "test_size":0.1,    # 0.1 = 10%
+    "modelAffectionLimitator":0     # 10 = 100% , 0 = 0%
 }
 
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -58,6 +58,10 @@ for rs in range(10):
             "params":['EOS', 'BASO', 'WBC', 'MONO', 'HCT', 'MCHC', 'RDWSD', 'RDWCV', 'MPV', 'PCT', 'PDW'],
             "name":"Comb-3"
         },
+        {
+            "params":['LYM', 'BASO', 'HGB', 'HCT', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW'],
+            "name":"Comb-4"
+        }
     ]
 
     all_columns = X.columns.tolist()
@@ -145,7 +149,7 @@ for sc in overallscores:
 
 totalScores = scTotal = scTotal/len(overallscores)
 
-print("Last result of test",BestScore,BestScoreSeed)
-print(totalScores)
+print("Overall Score :",totalScores)
+print("Best Accuracy :",BestScore)
 
 warnings.resetwarnings()
