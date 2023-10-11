@@ -1,17 +1,61 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
 import os
 import warnings
-import pickle
+import numpy as np 
+from collections import Counter
 
+class Knn:
+    def __init__(self, k):
+        self.k = k
+        self.X = None
+        self.y = None
+
+    def getDistance(self, p, q):
+        p = np.array(p)
+        q = np.array(q)
+        
+        if p.shape != q.shape:
+            raise ValueError("Input arrays p and q must have the same shape.")
+        
+        return np.sqrt(np.sum((p - q) ** 2))
+
+
+    def fit(self, X, y):
+        self.X = X.values
+        self.y = y.values
+
+    def predict(self, X_test):
+        y_pred = []
+        
+        for new_point in X_test:
+            distances = []
+            for i, point in enumerate(self.X):
+                distance = self.getDistance(point, new_point)
+                distances.append([distance, self.y[i]])
+            
+            categories = [category[1] for category in sorted(distances)[:self.k]]
+            result = Counter(categories).most_common(1)[0][0]
+            y_pred.append(result)
+        
+        return y_pred
+    
+    def CalculateAccuracy(self, machine, prediction):
+        machineData = machine.values
+        gotRightAcc = 0
+
+        for index in range(len(machineData)):
+            if machineData[index] == prediction[index][0]:
+                gotRightAcc += 1
+
+        return gotRightAcc/len(machineData)
+    
 config = {
-    "n_neighbor":21,    # Knn neighbour count, best = [19,20]
-    "accMultiplier":10,     # ex: *10 the multipler of accuracy score
-    "accResultMultiplier":3,    # ex: **2 the multipler of voting system
-    "test_size":0.1,    # 0.1 = 10%
-    "modelAffectionLimitator":0     # 10 = 100% , 0 = 0%
+    "n_neighbor":20,
+    "accMultiplier":10,
+    "accResultMultiplier":2,
+    "test_size":0.1,
+    "modelAffectionLimitator":0
 }
 
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -29,7 +73,6 @@ for column in df.columns[1:]:
 
 df = df[df.status != "ein"]
 
-# Define the target column mapping
 status = {"basitler": 0, "highrisk": 1, "lowrisk": 1}
 yUnmapped = df['status']
 y = yUnmapped.map(status)
@@ -40,6 +83,7 @@ BestScoreSeed = 0
 overallscores = []
 
 for rs in range(10):
+    knn_classifier = Knn(config["n_neighbor"])
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = config["test_size"])
 
@@ -58,10 +102,10 @@ for rs in range(10):
             "params":['EOS', 'BASO', 'WBC', 'MONO', 'HCT', 'MCHC', 'RDWSD', 'RDWCV', 'MPV', 'PCT', 'PDW'],
             "name":"Comb-3"
         },
-        {
-            "params":['LYM', 'BASO', 'HGB', 'HCT', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW'],
-            "name":"Comb-4"
-        }
+        # {
+            # "params":['LYM', 'BASO', 'HGB', 'HCT', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW'],
+            # "name":"Comb-4"
+        # }
     ]
 
     all_columns = X.columns.tolist()
@@ -75,19 +119,20 @@ for rs in range(10):
     for cosCol in columnsForAppending:
         TestParameters.append({"params":[cosCol], "name":cosCol})
 
-    knn_classifier = KNeighborsClassifier(n_neighbors = config["n_neighbor"])
-
     def TrainKnn(selected_features):
         selected_columns = list(selected_features)
         knn_classifier.fit(X_train[selected_columns], y_train)
-        y_pred = knn_classifier.predict(X_machine[selected_columns])
-        accuracy = accuracy_score(y_machine, y_pred)
+        y_pred = []
+        for i in range(len(X_machine)):
+            x_var = X_machine[selected_columns].iloc[i]
+            y_pred.append(TestKnn(selected_features, x_var, y_machine.iloc[i]))
+        accuracy = knn_classifier.CalculateAccuracy(y_machine,y_pred)
+        
         return accuracy
 
     def TestKnn(selected_features, x_var, y_var):
         selected_columns = list(selected_features)
         knn_classifier.fit(X_train[selected_columns], y_train)
-        # Reshape x_var to a 2D array
         x_var_2d = x_var[selected_columns].values.reshape(1, -1)
         y_pred = knn_classifier.predict(x_var_2d)
         
@@ -96,7 +141,6 @@ for rs in range(10):
     for parameters in TestParameters:
         acc = TrainKnn(parameters["params"])
         parameters["acc"] = acc*config["accMultiplier"]
-        # print(acc, parameters["name"])
 
     gotRight = 0
     gotWrong = 0
@@ -141,7 +185,6 @@ for rs in range(10):
     print(score)
     if score > BestScore and BestScore != 1 :
         BestScore = score
-        # BestScoreSeed = rs
 
 scTotal = 0
 for sc in overallscores:
@@ -149,7 +192,9 @@ for sc in overallscores:
 
 totalScores = scTotal = scTotal/len(overallscores)
 
-print("Overall Score :",totalScores)
-print("Best Accuracy :",BestScore)
+print("Best Result Of Training",BestScore)
+print(totalScores)
 
 warnings.resetwarnings()
+
+# Time complexity = O(N*M) N is the size of the test data and M is the size of the training data. + Extra Loops
