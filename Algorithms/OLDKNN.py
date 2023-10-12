@@ -5,6 +5,14 @@ import warnings
 import numpy as np 
 from collections import Counter
 
+config = {
+    "n_neighbor":20,
+    "accMultiplier":10, #Please use at least 10 for healthy measurements and functionality of accResultMultipler.
+    "accResultMultiplier":2,
+    "test_size":0.1,
+    "modelAffectionLimitator":0
+}
+
 class Knn:
     def __init__(self, k):
         self.k = k
@@ -19,7 +27,6 @@ class Knn:
             raise ValueError("Input arrays p and q must have the same shape.")
         
         return np.sqrt(np.sum((p - q) ** 2))
-
 
     def fit(self, X, y):
         self.X = X.values
@@ -50,13 +57,24 @@ class Knn:
 
         return gotRightAcc/len(machineData)
     
-config = {
-    "n_neighbor":20,
-    "accMultiplier":10,
-    "accResultMultiplier":2,
-    "test_size":0.1,
-    "modelAffectionLimitator":0
-}
+    def TrainKnn(self,selected_features):
+        selected_columns = list(selected_features)
+        self.fit(X_train[selected_columns], y_train)
+        y_pred = []
+        for i in range(len(X_machine)):
+            x_var = X_machine[selected_columns].iloc[i]
+            y_pred.append(self.TestKnn(selected_features, x_var, y_machine.iloc[i]))
+        accuracy = self.CalculateAccuracy(y_machine,y_pred)
+        
+        return accuracy
+
+    def TestKnn(self, selected_features, x_var, y_var):
+        selected_columns = list(selected_features)
+        self.fit(X_train[selected_columns], y_train)
+        x_var_2d = x_var[selected_columns].values.reshape(1, -1)
+        y_pred = self.predict(x_var_2d)
+        
+        return y_pred
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
@@ -73,7 +91,7 @@ for column in df.columns[1:]:
 
 df = df[df.status != "ein"]
 
-status = {"basitler": 0, "highrisk": 1, "lowrisk": 1}
+status = {"basitler": 0,"ein":2, "highrisk": 1, "lowrisk": 1}
 yUnmapped = df['status']
 y = yUnmapped.map(status)
 X = df.drop(columns=['status',"NRBC"])
@@ -82,10 +100,10 @@ BestScore = 0
 BestScoreSeed = 0
 overallscores = []
 
-for rs in range(10):
-    knn_classifier = Knn(config["n_neighbor"])
+for rs in range(1000):
+    KnnAlgorithm = Knn(config["n_neighbor"])
     
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = config["test_size"])
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = config["test_size"],)
 
     X_hand, X_machine, y_hand, y_machine = X_test.iloc[:len(X_test)//2], X_test.iloc[len(X_test)//2:], y_test.iloc[:len(y_test)//2], y_test.iloc[len(y_test)//2:]
 
@@ -119,27 +137,8 @@ for rs in range(10):
     for cosCol in columnsForAppending:
         TestParameters.append({"params":[cosCol], "name":cosCol})
 
-    def TrainKnn(selected_features):
-        selected_columns = list(selected_features)
-        knn_classifier.fit(X_train[selected_columns], y_train)
-        y_pred = []
-        for i in range(len(X_machine)):
-            x_var = X_machine[selected_columns].iloc[i]
-            y_pred.append(TestKnn(selected_features, x_var, y_machine.iloc[i]))
-        accuracy = knn_classifier.CalculateAccuracy(y_machine,y_pred)
-        
-        return accuracy
-
-    def TestKnn(selected_features, x_var, y_var):
-        selected_columns = list(selected_features)
-        knn_classifier.fit(X_train[selected_columns], y_train)
-        x_var_2d = x_var[selected_columns].values.reshape(1, -1)
-        y_pred = knn_classifier.predict(x_var_2d)
-        
-        return y_pred
-
     for parameters in TestParameters:
-        acc = TrainKnn(parameters["params"])
+        acc = KnnAlgorithm.TrainKnn(parameters["params"])
         parameters["acc"] = acc*config["accMultiplier"]
 
     gotRight = 0
@@ -152,7 +151,7 @@ for rs in range(10):
         resultsOfTests = []
         for params in TestParameters:
             resultsOfTest = {}
-            pred = TestKnn(params["params"],x_var,y_var)
+            pred = KnnAlgorithm.TestKnn(params["params"],x_var,y_var)
             resultsOfTest["accModel"] = params["acc"]
             resultsOfTest["pred"] = pred[0]
 
@@ -168,8 +167,7 @@ for rs in range(10):
                     voteValue1 = voteValue1 + resTest["accModel"]**config["accResultMultiplier"]
                 else:
                     voteValue0 = voteValue0 + resTest["accModel"]**config["accResultMultiplier"]
-
-        
+  
         if voteValue1 > voteValue0:
             voted = 1
         else: 
@@ -182,7 +180,7 @@ for rs in range(10):
 
     score = gotRight/(gotRight+gotWrong)
     overallscores.append(score)
-    print(score)
+    print(f"% {round(score,5)*100}")
     if score > BestScore and BestScore != 1 :
         BestScore = score
 
@@ -192,8 +190,8 @@ for sc in overallscores:
 
 totalScores = scTotal = scTotal/len(overallscores)
 
-print("Best Result Of Training",BestScore)
-print(totalScores)
+print("Best Accuracy: %",round(BestScore,5)*100)
+print("Average Accuracy: %",round(totalScores,5)*100)
 
 warnings.resetwarnings()
 
