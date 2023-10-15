@@ -1,5 +1,5 @@
 from flask import Flask, render_template,redirect, url_for, request, send_file
-import KNNINTERFACE
+# import KNNINTERFACE
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "key"
