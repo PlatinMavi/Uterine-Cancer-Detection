@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 import os
 
 path = os.getcwd()+r"\Datasets\default.csv"
+path = r"C:\Users\PC\Desktop\Cervicular-Cancer-Detection\Datasets\default.csv"
 
 # Load the dataset
 df = pd.read_csv(path)

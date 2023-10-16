@@ -1,5 +1,5 @@
-from flask import Flask, render_template,redirect, url_for, request, send_file
-# import KNNINTERFACE
+from flask import Flask, render_template, jsonify, request
+from KNNINTERFACE import Predict
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "key"
@@ -9,9 +9,13 @@ app.config["UPLOAD_FOLDER"] = "static/files"
 def GetImage():
     return render_template("index.html")
 
-@app.route("/api/prediciton", methods=["GET","POST"])
+@app.route("/api/prediction", methods=["POST"])
 def ReturnApi():
-    pass
+    data = request.json
+    dataToPass = [float(value) for value in list(data.values())]
+    prediciton,v0,v1 = Predict(dataToPass)
+
+    return jsonify({"p":prediciton,"v0":v0,"v1":v1})
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,17 +1,93 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-import os
 import warnings
+import numpy as np 
+from collections import Counter
 
-#STOP ANNOYING WARNINGS
+config = {
+    "n_neighbor":20,
+    "accMultiplier":10, #Please use at least 10 for healthy measurements and functionality of accResultMultipler.
+    "accResultMultiplier":2,
+    "test_size":0.1,
+    "modelAffectionLimitator":0
+}
+
 warnings.filterwarnings('ignore', category=UserWarning)
 
-def Start(values):
+class Knn:
+    def __init__(self, k):
+        self.k = k
+        self.X = None
+        self.y = None
 
-    # FIXING DATASET
-    path = os.getcwd()+r"\Datasets\default.csv"
+    def getDistance(self, p, q):
+        p = np.array(p)
+        q = np.array(q)
+        
+        if p.shape != q.shape:
+            raise ValueError("Input arrays p and q must have the same shape.")
+        
+        return np.sqrt(np.sum((p - q) ** 2))
+
+    def fit(self, X, y):
+        self.X = X.values
+        self.y = y.values
+
+    def predict(self, X_test):
+        y_pred = []
+        
+        for new_point in X_test:
+            distances = []
+            for i, point in enumerate(self.X):
+                distance = self.getDistance(point, new_point)
+                distances.append([distance, self.y[i]])
+            
+            categories = [category[1] for category in sorted(distances)[:self.k]]
+            result = Counter(categories).most_common(1)[0][0]
+            y_pred.append(result)
+        
+        return y_pred
+    
+    def CalculateAccuracy(self, machine, prediction):
+        machineData = machine.values
+        gotRightAcc = 0
+
+        for index in range(len(machineData)):
+            if machineData[index] == prediction[index][0]:
+                gotRightAcc += 1
+
+        return gotRightAcc/len(machineData)
+    
+    def TrainKnn(self, selected_features, X_train, X_test, y_train, y_test):
+        selected_columns = list(selected_features)
+        self.fit(X_train[selected_columns], y_train)
+        y_pred = []
+        for i in range(len(X_test)):
+            x_var = X_test[selected_columns].iloc[i]
+            y_pred.append(self.TestKnn(selected_features, X_train, y_train, x_var))  # Provide all required arguments
+        accuracy = self.CalculateAccuracy(y_test, y_pred)
+        return accuracy
+
+    def TestKnn(self, selected_features, X_train, y_train, x_var):
+        selected_columns = list(selected_features)
+        self.fit(X_train[selected_columns], y_train)
+        try:
+            x_var_2d = x_var[selected_columns].values.reshape(1, -1)
+        except:
+            newValues = [[]]
+            allparams = ['WBC', 'NEU', 'LYM', 'MONO', 'EOS', 'BASO', 'RBC', 'HGB', 'HCT', 'MCV', 'MCH', 'MCHC', 'RDWSD', 'RDWCV', 'PLT', 'MPV', 'PCT', 'PDW', 'NRBC']
+
+            for param in selected_columns:
+                newValues[0].append(x_var[allparams.index(param)])
+
+            x_var_2d = newValues
+        # print(x_var_2d)
+        y_pred = self.predict(x_var_2d)
+        return y_pred
+
+
+def Predict(xFromPost):
+    path = r"C:\Users\PC\Desktop\Cervicular-Cancer-Detection\gui\default.csv"
     df = pd.read_csv(path)
     df.replace("-", "0.0", inplace=True)
     df.replace("----", "0.0", inplace=True)
@@ -22,18 +98,16 @@ def Start(values):
     for column in df.columns[1:]:
         df[column] = df[column].apply(ConvertFloat)
 
-    # TARGETING COLUMNS AND MAPPING FOR EASIER PREDICTIONS
-    status = {"basitler": 0, "ein": 0, "highrisk": 1, "lowrisk": 1}
+    df = df[df.status != "ein"]
+
+    status = {"basitler": 0,"ein":2, "highrisk": 1, "lowrisk": 1}
     yUnmapped = df['status']
     y = yUnmapped.map(status)
-    X = df.drop(columns=['status',"NRBC"]) # LACK OF DATA FOR NRBC
+    X = df.drop(columns=['status'])
 
-    # SPLITING FOR DIFFERENT TEST VARIABLES 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=86)
-    X_hand, X_machine, y_hand, y_machine = X_test.iloc[:len(X_test)//2], X_test.iloc[len(X_test)//2:], y_test.iloc[:len(y_test)//2], y_test.iloc[len(y_test)//2:]
+    KnnAlgorithm = Knn(config["n_neighbor"])
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = config["test_size"],)
 
-
-    # COLUMNS AND COMBINATIONS THAT HAS HIGH ACCURACY RATE
     TestParameters = [
         {
             "params":["MCHC", "RDWSD", "RDWCV", "PCT", "PDW"],
@@ -46,125 +120,50 @@ def Start(values):
         {
             "params":['EOS', 'BASO', 'WBC', 'MONO', 'HCT', 'MCHC', 'RDWSD', 'RDWCV', 'MPV', 'PCT', 'PDW'],
             "name":"Comb-3"
-        },
+        }
     ]
 
-    # TESTING INDIVIDUAL VALUES AND ADDING THEM AS TEST PARAMETERS
     all_columns = X.columns.tolist()
     columns = all_columns[:]
+    columnsForAppending = ['LYM', 'BASO', 'HGB', 'HCT', 'MCV', 'MCHC', 'RDWSD', 'RDWCV', 'PCT', 'PDW']
 
     for col in columns:
         if "_" in col:
             columns.pop(columns.index(col))
 
-    for cosCol in columns:
+    for cosCol in columnsForAppending:
         TestParameters.append({"params":[cosCol], "name":cosCol})
 
-    # KNN ALORITHIM DEFINITION
-    knn_classifier = KNeighborsClassifier(n_neighbors=20)
-
-    # TO GET ACCURACY SCORE FOR INDIVIDUAL TESTING
-    def TrainKnn(selected_features):
-        selected_columns = list(selected_features)
-        knn_classifier.fit(X_train[selected_columns], y_train)
-        y_pred = knn_classifier.predict(X_machine[selected_columns])
-        accuracy = accuracy_score(y_machine, y_pred)
-        return accuracy
-
-    # TO GET PREDICTIONS FOR INDIVIDUALS
-    def TestKnn(selected_features, x_var):
-        selected_columns = list(selected_features)
-        knn_classifier.fit(X_train[selected_columns], y_train)
-        # Reshape x_var to a 2D array
-        x_var_2d = x_var[selected_columns].values.reshape(1, -1)
-        y_pred = knn_classifier.predict(x_var_2d)
-        
-        return y_pred
-    
-    def TestKnnINTERFACE(selected_features, x_var):
-        selected_columns = list(selected_features)
-        knn_classifier.fit(X_train[selected_columns], y_train)
-        # Reshape x_var to a 2D array
-        x_var_2d = x_var[selected_columns].values.reshape(1, -1)
-        y_pred = knn_classifier.predict(x_var_2d)
-        
-        return y_pred
-
-    # SAVING ACCURACY RATE FOR LATER USEAGES
     for parameters in TestParameters:
-        acc = TrainKnn(parameters["params"])
-        parameters["acc"] = acc*10
+        acc = KnnAlgorithm.TrainKnn(parameters["params"],X_train,X_test,y_train,y_test)
+        parameters["acc"] = acc*config["accMultiplier"]
 
+    x_var = xFromPost
+    resultsOfTests = []
+    for params in TestParameters:
+        resultsOfTest = {}
+        pred = KnnAlgorithm.TestKnn(params["params"], X_train, y_train, x_var)  # Provide all required arguments
+        resultsOfTest["accModel"] = params["acc"]
+        resultsOfTest["pred"] = pred[0]
 
-    gotRight = 0
-    gotWrong = 0
+        resultsOfTests.append(resultsOfTest)
 
-    # TESTING INDIVIDUAL DATA IN EVERY COMB AND CREATED VOTING SYSTEM
-    for i,useless in enumerate(X_hand):
-        x_var = X_hand.reset_index(drop=True).iloc[i]
-        y_var = y_hand.reset_index(drop=True).iloc[i]
+    voteValue0 = 0
+    voteValue1 = 0
+    voted = 0
 
-        resultsOfTests = []
-        for params in TestParameters:
-            resultsOfTest = {}
-            pred = TestKnn(params["params"],x_var)
-            resultsOfTest["accModel"] = params["acc"]
-            resultsOfTest["pred"] = pred[0]
+    for resTest in resultsOfTests:
+        if resTest["accModel"] >= config["modelAffectionLimitator"]:
+            if resTest["pred"] == 1:
+                voteValue1 = voteValue1 + resTest["accModel"]**config["accResultMultiplier"]
+            else:
+                voteValue0 = voteValue0 + resTest["accModel"]**config["accResultMultiplier"]
 
-            resultsOfTests.append(resultsOfTest)
-
-        voteValue0 = 0
-        voteValue1 = 0
+    if voteValue1 > voteValue0:
+        voted = 1
+    else: 
         voted = 0
 
-        for resTest in resultsOfTests:
-            # if resTest["accModel"] < 0.67:
-                if resTest["pred"] == 1:
-                    voteValue1 = voteValue1 + resTest["accModel"]**5
-                else:
-                    voteValue0 = voteValue0 + resTest["accModel"]**5
-        
-        if voteValue1 > voteValue0:
-            voted = 1
-        else: 
-            voted = 0
-
-        if voted == y_var:
-            gotRight += 1
-        else:
-            gotWrong += 1
-
-    score = gotRight/(gotRight+gotWrong) # CALCULATE OVERALL ACCURACY
-
-    resultsOfTestsd = []
-    x_vard = values
-    for paramsd in TestParameters:
-        resultsOfTestd = {}
-        predd = TestKnnINTERFACE(params["params"],x_vard,)
-        resultsOfTestd["accModel"] = paramsd["acc"]
-        resultsOfTestd["pred"] = predd[0]
-
-        resultsOfTestsd.append(resultsOfTestd)
-
-    voteValue0d = 0
-    voteValue1d = 0
-    votedd = 0
-
-    for resTestd in resultsOfTests:
-        # if resTest["accModel"] < 0.67:
-            if resTestd["pred"] == 1:
-                voteValue1d = voteValue1d + resTestd["accModel"]**2
-            else:
-                voteValue0d = voteValue0d + resTestd["accModel"]**2
-    
-    if voteValue1d > voteValue0d:
-        votedd = 1
-    else: 
-        votedd = 0
-
-    return score, votedd
-
-s = Start([5.16, 2.910, 1.700, 0.380 ,7.4, 2.9, 0.4, 9.80, 29.5, 87.30, 29.00, 33.20, 43.10, 13.60, 256, 10.90, 0.28, 12.20])
-
+    return voted,voteValue0,voteValue1
 
 warnings.resetwarnings()
