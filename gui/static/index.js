@@ -49,7 +49,6 @@ function addLoader(elementId) {
 }
 
 function addResults(elementId,r1,r2,r3) {
-    alert([r1,r2,r3])
     let state = undefined
     if (r1 === 1){
         state = "Kanser"
@@ -133,12 +132,11 @@ async function predict(){
         }),
     });
     
-    const data = JSON.stringify(await response.json());
-    alert(data)
+    const data = await response.json()
+
     const prediction = data.p
     const voteValue0 = data.v0
     const voteValue1 = data.v1
 
     addResults("body-modal",prediction,voteValue0,voteValue1)
 }
-// {"p":1,"v0":158.38376646493413,"v1":420.3275186899252}
